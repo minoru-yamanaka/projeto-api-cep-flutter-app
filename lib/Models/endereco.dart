@@ -6,6 +6,7 @@ class Endereco {
   String? uf;
   String? estado;
   String? complemento;
+  
   Endereco({
     this.cep,
     this.logradouro,
@@ -15,6 +16,7 @@ class Endereco {
     this.estado,
     this.complemento,
   });
+
   factory Endereco.fromJson(Map<String, dynamic> json) {
     return Endereco(
       cep: json["cep"],

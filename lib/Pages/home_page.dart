@@ -21,30 +21,44 @@ class _MyHomePageState extends State<HomePage> {
   TextEditingController controllerCidade = TextEditingController();
   TextEditingController controllerEstado = TextEditingController();
   Endereco? endereco; // Variavel pode receber null "?"
+  bool isLoading = false;
 
   ViaCepService viaCepService = ViaCepService();
 
-  Future<void>buscarCep(String cep) async {
-    Endereco? response = await viaCepService.buscarEndereco(cep);
-
-    if (response?.localidade == null) {
-      showDialog(
-        context: context,
-        builder: (context) {
-          return AlertDialog(
-            icon: Icon(Icons.warning, color: Color(0x0017FFFF)),
-            title: Text("Atenção"),
-            content: Text("Cep não encontrado"),
-          );
-        },
-      );
-      return;
-    }
+  Future<void> buscarCep(String cep) async {
+    clearControllers();
     setState(() {
-      endereco = response;
+      isLoading = true;
     });
+    try {
+      Endereco? response = await viaCepService.buscarEndereco(cep);
 
-    setControllerCep(endereco!);
+      if (response?.localidade == null) {
+        showDialog(
+          context: context,
+          builder: (context) {
+            return AlertDialog(
+              icon: Icon(Icons.warning, color: Color(0x0017FFFF)),
+              title: Text("Atenção"),
+              content: Text("Cep não encontrado"),
+            );
+          },
+        );
+        controllerCep.clear();
+        return;
+      }
+      setState(() {
+        endereco = response;
+      });
+
+      setControllerCep(endereco!);
+    } catch (erro) {
+      throw ("Erro ao Buscar Cep: $erro");
+    } finally {
+      setState(() {
+        isLoading = false;
+      });
+    }
   }
 
   void setControllerCep(Endereco endereco) {
@@ -54,6 +68,16 @@ class _MyHomePageState extends State<HomePage> {
     controllerBairro.text = endereco.bairro!;
     controllerCidade.text = endereco.localidade!;
     controllerEstado.text = endereco.estado!;
+  }
+
+  void clearControllers() {
+    controllerBairro.clear();
+    // controllerCep.clear();
+    controllerLogradouro.clear();
+    controllerComplemento.clear();
+    controllerBairro.clear();
+    controllerCidade.clear();
+    controllerEstado.clear();
   }
 
   @override
@@ -68,17 +92,31 @@ class _MyHomePageState extends State<HomePage> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               TextField(
+                onChanged: (valor) {
+                  if (valor.isEmpty) {
+                    clearControllers();
+                  }
+                },
                 controller: controllerCep,
                 maxLength: 8,
                 inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                 keyboardType: TextInputType.number,
                 decoration: InputDecoration(
-                  suffixIcon: IconButton(
-                    onPressed: () {
-                      buscarCep(controllerCep.text);
-                    },
-                    icon: Icon(Icons.search),
-                  ),
+                  suffixIcon: isLoading
+                      ? SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: Padding(
+                            padding: const EdgeInsets.all(15),
+                            child: CircularProgressIndicator(),
+                          ),
+                        )
+                      : IconButton(
+                          onPressed: () {
+                            buscarCep(controllerCep.text);
+                          },
+                          icon: Icon(Icons.search),
+                        ),
                   border: OutlineInputBorder(),
                   labelText: "CEP",
                 ),
