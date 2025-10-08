@@ -121,14 +121,15 @@ class _MyHomePageState extends State<HomePage> {
                   labelText: "CEP",
                 ),
               ),
-              TextField(
-                controller: controllerLogradouro,
-                keyboardType: TextInputType.number,
-                decoration: InputDecoration(
-                  border: OutlineInputBorder(),
-                  labelText: "Logradouro",
+              if (controllerLogradouro.text.isEmpty)
+                TextField(
+                  controller: controllerLogradouro,
+                  keyboardType: TextInputType.number,
+                  decoration: InputDecoration(
+                    border: OutlineInputBorder(),
+                    labelText: "Logradouro",
+                  ),
                 ),
-              ),
               TextField(
                 controller: controllerComplemento,
                 decoration: InputDecoration(
