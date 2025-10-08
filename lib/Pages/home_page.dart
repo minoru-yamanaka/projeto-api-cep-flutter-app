@@ -83,7 +83,10 @@ class _MyHomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(),
+      appBar: AppBar(
+        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+        title: Text("ViaCEP Api"),
+      ),
       body: Center(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 30),
@@ -94,6 +97,9 @@ class _MyHomePageState extends State<HomePage> {
               TextField(
                 onChanged: (valor) {
                   if (valor.isEmpty) {
+                    setState(() {
+                      endereco = null;
+                    });
                     clearControllers();
                   }
                 },
@@ -121,43 +127,48 @@ class _MyHomePageState extends State<HomePage> {
                   labelText: "CEP",
                 ),
               ),
-              if (controllerLogradouro.text.isEmpty)
-                TextField(
-                  controller: controllerLogradouro,
-                  keyboardType: TextInputType.number,
-                  decoration: InputDecoration(
-                    border: OutlineInputBorder(),
-                    labelText: "Logradouro",
-                  ),
+              // if (controllerLogradouro.text.isNotEmpty)
+              if (endereco?.bairro != null)
+                Column(
+                  spacing: 10,
+                  children: [
+                    TextField(
+                      controller: controllerLogradouro,
+                      decoration: InputDecoration(
+                        border: OutlineInputBorder(),
+                        labelText: "Logradouro",
+                      ),
+                    ),
+                    TextField(
+                      controller: controllerComplemento,
+                      decoration: InputDecoration(
+                        border: OutlineInputBorder(),
+                        labelText: "Complemento",
+                      ),
+                    ),
+                    TextField(
+                      controller: controllerBairro,
+                      decoration: InputDecoration(
+                        border: OutlineInputBorder(),
+                        labelText: "Bairro",
+                      ),
+                    ),
+                    TextField(
+                      controller: controllerCidade,
+                      decoration: InputDecoration(
+                        border: OutlineInputBorder(),
+                        labelText: "Cidade",
+                      ),
+                    ),
+                    TextField(
+                      controller: controllerEstado,
+                      decoration: InputDecoration(
+                        border: OutlineInputBorder(),
+                        labelText: "Estado",
+                      ),
+                    ),
+                  ],
                 ),
-              TextField(
-                controller: controllerComplemento,
-                decoration: InputDecoration(
-                  border: OutlineInputBorder(),
-                  labelText: "Complemento",
-                ),
-              ),
-              TextField(
-                controller: controllerBairro,
-                decoration: InputDecoration(
-                  border: OutlineInputBorder(),
-                  labelText: "Bairro",
-                ),
-              ),
-              TextField(
-                controller: controllerCidade,
-                decoration: InputDecoration(
-                  border: OutlineInputBorder(),
-                  labelText: "Cidade",
-                ),
-              ),
-              TextField(
-                controller: controllerEstado,
-                decoration: InputDecoration(
-                  border: OutlineInputBorder(),
-                  labelText: "Estado",
-                ),
-              ),
             ],
           ),
         ),
