@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:projeto_2/Models/usuario_model.dart';
+import 'package:projeto_2/Services/firebase_service.dart';
 
 class FormCadastroUsuarioPage extends StatefulWidget {
   const FormCadastroUsuarioPage({super.key});
@@ -17,6 +19,52 @@ class _FormCadastroUsuarioPageState extends State<FormCadastroUsuarioPage> {
   TextEditingController confirmacaoController = TextEditingController();
 
   GlobalKey<FormState> formKey = GlobalKey<FormState>();
+
+  final FirebaseService _firebaseService = FirebaseService(
+    collectionName: "usuarios",
+  );
+
+  Future<void> salvarUsuario() async {
+    if (!formKey.currentState!.validate()) {
+      return;
+    }
+
+    Usuario usuario = Usuario(
+      id: "",
+      nome: nomeController.text,
+      email: emailController.text,
+      telefone: telefoneController.text,
+      cpf: cpfController.text,
+      senha: senhaController.text,
+    );
+
+    try {
+      String idUser = await _firebaseService.create(usuario.toMap());
+
+      if (idUser.isNotEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            backgroundColor: Colors.green,
+            content: Column(
+              children: [
+                Text(
+                  "Sucesso",
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                Text(
+                  "Usuário cadastrado com sucesso!",
+                  style: TextStyle(color: Colors.white),
+                ),
+              ],
+            ),
+          ),
+        );
+      }
+    } catch (e) {}
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -65,7 +113,7 @@ class _FormCadastroUsuarioPageState extends State<FormCadastroUsuarioPage> {
                     TextFormField(
                       validator: (value) {
                         if (value!.isEmpty) {
-                          return "O campo Telefone é obrigatório";
+                          return "O campo telefone é obrigatório";
                         }
                         return null;
                       },
@@ -78,7 +126,7 @@ class _FormCadastroUsuarioPageState extends State<FormCadastroUsuarioPage> {
                     TextFormField(
                       validator: (value) {
                         if (value!.isEmpty) {
-                          return "O campo Cpf é obrigatório";
+                          return "O campo cpf é obrigatório";
                         }
                         return null;
                       },
@@ -91,7 +139,7 @@ class _FormCadastroUsuarioPageState extends State<FormCadastroUsuarioPage> {
                     TextFormField(
                       validator: (value) {
                         if (value!.isEmpty) {
-                          return "O campo Senha é obrigatório";
+                          return "O campo senha é obrigatório";
                         }
                         return null;
                       },
@@ -104,10 +152,10 @@ class _FormCadastroUsuarioPageState extends State<FormCadastroUsuarioPage> {
                     TextFormField(
                       validator: (value) {
                         if (value!.isEmpty) {
-                          return "A confirmação da senha deve ser digitada!";
+                          return "A confirmação da senha deve ser digitada";
                         }
                         if (value != senhaController.text) {
-                          return "A confirmação está incorreta!";
+                          return "A confirmação da senha está incorreta";
                         }
                         return null;
                       },
@@ -118,12 +166,7 @@ class _FormCadastroUsuarioPageState extends State<FormCadastroUsuarioPage> {
                       ),
                     ),
                     ElevatedButton(
-                      onPressed: () {
-                        if (!formKey.currentState!.validate()) {
-                          return;
-                        }
-                        print("Formulário validado");
-                      },
+                      onPressed: salvarUsuario,
                       child: Text("Cadastrar"),
                     ),
                   ],
