@@ -1,72 +1,103 @@
-import 'package:flutter/material.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-// 1. IMPORTANTE: Importe sua classe Usuario!
-import 'package:projeto_2/Models/usuario_model.dart';
-// 2. IMPORTANTE: Importe o modal que criamos!
-import 'package:projeto_2/Pages/bottom_sheet_modal.dart';
+import 'package:flutter/material.dart'; // Widgets do Material Design (Scaffold, AppBar, etc).
+import 'package:cloud_firestore/cloud_firestore.dart'; // Ferramentas do Firebase Firestore (StreamBuilder, QuerySnapshot).
 
-// Convertemos para StatefulWidget para gerenciar o texto da busca
+// 1. IMPORTANTE: Importe sua classe Usuario!
+import 'package:projeto_2/Models/usuario_model.dart'; // Nosso "molde" de dados de usuário.
+
+// 2. IMPORTANTE: Importe o modal que criamos!
+import 'package:projeto_2/Pages/bottom_sheet_modal.dart'; // O widget que exibe os detalhes.
+
+// Convertemos para StatefulWidget (Widget com Estado)
+// O motivo: Precisamos "lembrar" o que o usuário está digitando na barra de busca.
+// Um StatelessWidget não "lembra" de nada.
 class ListaUsuariosPage extends StatefulWidget {
   const ListaUsuariosPage({super.key});
 
+  // O Flutter chama este método para criar a classe de "Estado".
   @override
   State<ListaUsuariosPage> createState() => _ListaUsuariosPageState();
 }
 
+// Esta é a classe que guarda o "Estado" (as variáveis que mudam, como o texto da busca).
 class _ListaUsuariosPageState extends State<ListaUsuariosPage> {
-  // Variável para guardar o que o usuário está digitando
+  // Variável de estado para guardar o que o usuário está digitando.
+  // O '_' no início a torna "privada" (só pode ser usada nesta classe).
   String _searchQuery = "";
 
-  // Stream principal que busca todos os usuários
+  // Declaração do "cano" (Stream) de dados.
+  // 'final' significa que o *cano* em si não muda (sempre aponta para a mesma coleção).
   final Stream<QuerySnapshot> _usuariosStream = FirebaseFirestore.instance
-      .collection('usuarios')
-      .snapshots(); // .snapshots(): "Me avise sempre que algo mudar".
+      .collection('usuarios') // Aponta para a coleção "usuarios" no Firebase.
+      .snapshots(); // .snapshots() é o comando que "abre a torneira" e fica
+  // ouvindo em tempo real. Qualquer mudança no Firebase
+  // será enviada por este "cano" automaticamente.
 
   // --- NOVA FUNÇÃO ---
-  // Função para mostrar o BottomSheet que criamos
+  // Função para mostrar o BottomSheet (o modal que sobe).
+  // Ela recebe o 'context' (a "árvore" de widgets) e o 'usuario' específico
+  // que foi clicado na lista.
   void _mostrarDetalhesUsuario(BuildContext context, Usuario usuario) {
+    // Comando do Flutter para "subir" um modal.
     showModalBottomSheet(
-      context: context,
-      isScrollControlled: true, // Permite o modal ser mais alto que 50% da tela
+      context: context, // Onde ele deve aparecer (na tela atual).
+      isScrollControlled:
+          true, // Permite que o modal ocupe mais de 50% da tela (útil se o teclado abrir).
       backgroundColor: Colors
-          .transparent, // Fundo transparente para o borderRadius funcionar
+          .transparent, // Deixa o "fundo" do showModalBottomSheet transparente.
+      // Isso é necessário para que o 'borderRadius'
+      // que definimos no *nosso* widget (BottomSheetModal)
+      // apareça corretamente.
       builder: (BuildContext ctx) {
-        // Retorna o widget que criamos, passando o usuário selecionado
+        // 'builder' constrói o widget que vai *dentro* do modal.
+        // Retorna o widget que criamos, passando o usuário selecionado.
         return BottomSheetModal(usuario: usuario);
       },
     );
   }
   // --- FIM DA NOVA FUNÇÃO ---
 
+  // O método 'build' é o que constrói a interface visual da tela.
   @override
   Widget build(BuildContext context) {
+    // 'Scaffold' é a estrutura básica da tela (com appBar, body, etc).
     return Scaffold(
-      backgroundColor: Colors.grey[100], // Fundo mais suave
+      backgroundColor: Colors.grey[100], // Fundo da tela (cinza claro).
       appBar: AppBar(
-        // Configurações do AppBar conforme a imagem
-        elevation: 0,
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.black87,
+        // Configurações do AppBar (barra do topo) conforme a imagem.
+        elevation: 0, // Remove a sombra (elevação) da AppBar.
+        backgroundColor: Colors.white, // Fundo branco.
+        foregroundColor: Colors.black87, // Cor dos ícones e textos (preto).
+        // 'leading' é o widget à esquerda na AppBar.
         leading: IconButton(
-          icon: Icon(Icons.arrow_back),
-          onPressed: () => Navigator.of(context).pop(),
+          icon: Icon(Icons.arrow_back), // Ícone de voltar.
+          onPressed: () =>
+              Navigator.of(context).pop(), // Ação de voltar para tela anterior.
         ),
+        // 'title' é o widget principal da AppBar.
         title: Row(
+          // Usamos uma 'Row' (Linha) para colocar o ícone e os textos lado a lado.
           children: [
+            // O ícone azul com o grupo.
             CircleAvatar(
               radius: 18,
               backgroundColor: Theme.of(context).primaryColor,
               child: const Icon(Icons.group, size: 20, color: Colors.white),
             ),
-            const SizedBox(width: 12),
-            // O StreamBuilder aqui é só para o TÍTULO (contagem de usuários)
+            const SizedBox(width: 12), // Espaço entre o ícone e os textos.
+            // --- TÍTULO DINÂMICO COM STREAMBUILDER ---
+            // Usamos um StreamBuilder *aqui também* para mostrar a contagem de usuários.
+            // Ele "ouve" o mesmo 'stream' da lista.
             StreamBuilder<QuerySnapshot>(
               stream: _usuariosStream,
               builder: (context, snapshot) {
-                // Pega a contagem de usuários
+                // Pega o número de documentos (usuários).
+                // 'snapshot.data?.docs.length' -> O '?' protege contra nulo.
+                // '?? 0' -> Se o resultado for nulo, usa '0'.
                 int count = snapshot.data?.docs.length ?? 0;
+                // Retorna uma 'Column' (Coluna) para os dois textos.
                 return Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                  crossAxisAlignment:
+                      CrossAxisAlignment.start, // Alinha textos à esquerda.
                   children: [
                     const Text(
                       "Usuários",
@@ -76,7 +107,7 @@ class _ListaUsuariosPageState extends State<ListaUsuariosPage> {
                       ),
                     ),
                     Text(
-                      "$count cadastrados",
+                      "$count cadastrados", // Texto dinâmico com a contagem.
                       style: const TextStyle(fontSize: 12, color: Colors.grey),
                     ),
                   ],
@@ -85,48 +116,64 @@ class _ListaUsuariosPageState extends State<ListaUsuariosPage> {
             ),
           ],
         ),
+        // 'actions' são os widgets à direita na AppBar.
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),
             onPressed: () {
-              // Ação de recarregar (opcional)
-              // Como estamos usando Stream, ele atualiza sozinho!
-              // Mas podemos manter o botão.
+              // Como estamos usando Stream, a atualização é automática.
+              // Chamar 'setState' vazio é um "truque" para forçar
+              // a reconstrução da tela, se necessário.
               setState(() {});
             },
           ),
         ],
       ),
+      // 'body' é o conteúdo principal da tela.
       body: Column(
+        // O corpo é uma Coluna: Barra de Busca (em cima) e Lista (embaixo).
         children: [
-          // --- BARRA DE BUSCA ---
+          // --- 1. BARRA DE BUSCA ---
           Container(
-            color: Colors.white,
+            color: Colors.white, // Fundo branco para a área da busca.
             padding: const EdgeInsets.symmetric(
               horizontal: 16.0,
               vertical: 10.0,
             ),
+            // 'TextField' é o campo de entrada de texto.
             child: TextField(
+              // 'onChanged' é a função chamada *toda vez* que o usuário digita.
               onChanged: (value) {
-                // Atualiza o estado com o texto digitado
+                // 'setState' é o comando que "avisa" o Flutter que o estado mudou
+                // e que a tela precisa ser redesenhada.
                 setState(() {
+                  // Atualiza nossa variável de estado com o texto digitado,
+                  // já convertido para minúsculas para facilitar a busca.
                   _searchQuery = value.toLowerCase();
                 });
               },
+              // 'decoration' estiliza o campo de texto.
               decoration: InputDecoration(
-                hintText: "Buscar usuário...",
-                prefixIcon: Icon(Icons.search, color: Colors.grey[600]),
-                filled: true,
-                fillColor: Colors.grey[100],
-                contentPadding: const EdgeInsets.symmetric(vertical: 10.0),
+                hintText: "Buscar usuário...", // Texto de fundo.
+                prefixIcon: Icon(
+                  Icons.search,
+                  color: Colors.grey[600],
+                ), // Ícone (lupa).
+                filled: true, // O campo terá cor de fundo.
+                fillColor: Colors.grey[100], // Fundo cinza claro.
+                contentPadding: const EdgeInsets.symmetric(
+                  vertical: 10.0,
+                ), // Padding.
+                // Borda padrão (quando não está focado).
                 border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12.0),
-                  borderSide: BorderSide.none, // Sem borda
+                  borderRadius: BorderRadius.circular(12.0), // Cantos redondos.
+                  borderSide: BorderSide.none, // Sem linha de borda.
                 ),
+                // Borda quando o usuário está digitando (focado).
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12.0),
                   borderSide: BorderSide(
-                    color: Theme.of(context).primaryColor,
+                    color: Theme.of(context).primaryColor, // Borda azul.
                     width: 2,
                   ),
                 ),
@@ -135,46 +182,64 @@ class _ListaUsuariosPageState extends State<ListaUsuariosPage> {
           ),
           // --- FIM DA BARRA DE BUSCA ---
 
-          // --- LISTA DE USUÁRIOS ---
+          // --- 2. LISTA DE USUÁRIOS ---
+          // 'Expanded' é ESSENCIAL. Ele diz: "Use todo o espaço vertical
+          // que sobrou na tela para este widget".
+          // Sem ele, a 'ListView' (que pode ser infinita) daria erro
+          // de "overflow" (estourar a tela).
           Expanded(
+            // O filho é o 'StreamBuilder' principal que constrói a lista.
             child: StreamBuilder<QuerySnapshot>(
-              stream: _usuariosStream,
-              builder:
-                  (
-                    BuildContext context,
-                    AsyncSnapshot<QuerySnapshot> snapshot,
-                  ) {
-                    if (snapshot.hasError) {
-                      return const Center(
-                        child: Text("Erro ao carregar usuários."),
-                      );
-                    }
-                    if (snapshot.connectionState == ConnectionState.waiting) {
-                      return const Center(child: CircularProgressIndicator());
-                    }
-                    if (snapshot.data!.docs.isEmpty) {
-                      return const Center(
-                        child: Text("Nenhum usuário encontrado."),
-                      );
-                    }
+              stream: _usuariosStream, // O "cano" que ele deve "ouvir".
+              // 'builder' é a função que constrói a lista com base
+              // nos dados que chegam do 'stream'.
+              builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
+                // --- Tratamento de Estados da Conexão ---
+                // 1. Se deu erro:
+                if (snapshot.hasError) {
+                  return const Center(
+                    child: Text("Erro ao carregar usuários."),
+                  );
+                }
+                // 2. Se está esperando (carregando):
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+                // 3. Se conectou, mas não veio nada:
+                if (snapshot.data!.docs.isEmpty) {
+                  return const Center(
+                    child: Text("Nenhum usuário encontrado."),
+                  );
+                }
+                // --- Fim do Tratamento de Estados ---
 
-                    // --- LÓGICA DE FILTRO DA BUSCA ---
-                    final List<DocumentSnapshot>
-                    usuariosFiltrados = snapshot.data!.docs.where((doc) {
-                      // Converte o documento para o nosso modelo Usuario
-                      // Usamos um 'try-catch' para o caso de dados mal formatados
+                // --- LÓGICA DE FILTRO DA BUSCA ---
+                // Se chegamos aqui, temos dados!
+                // Criamos uma nova lista 'usuariosFiltrados'.
+                final List<DocumentSnapshot> usuariosFiltrados = snapshot
+                    .data!
+                    .docs // Pega a lista completa de documentos
+                    .where((doc) {
+                      // '.where()' é um filtro. Ele passa por cada 'doc'
+                      // e decide se o mantém na lista.
+                      // Usamos 'try-catch' por segurança: se um usuário
+                      // no Firebase estiver com dados mal formatados,
+                      // o 'Usuario.fromMap' pode falhar.
                       try {
+                        // Converte o 'Map' do Firebase para nosso objeto 'Usuario'.
                         final usuario = Usuario.fromMap(
                           doc.data() as Map<String, dynamic>,
                           doc.id,
                         );
 
-                        // Se a busca estiver vazia, mostra tudo
+                        // Se a busca estiver vazia, 'return true' (mostra o usuário).
                         if (_searchQuery.isEmpty) {
                           return true;
                         }
 
-                        // Verifica se o nome, email ou cpf contêm o texto da busca
+                        // A lógica do filtro:
+                        // Retorna 'true' (mostra) se o NOME OU o EMAIL OU o CPF
+                        // (em minúsculas) contiver o texto da busca.
                         return usuario.nome.toLowerCase().contains(
                               _searchQuery,
                             ) ||
@@ -183,148 +248,159 @@ class _ListaUsuariosPageState extends State<ListaUsuariosPage> {
                             ) ||
                             usuario.cpf.toLowerCase().contains(_searchQuery);
                       } catch (e) {
+                        // Se deu erro ao converter, loga no console e não mostra.
                         print("Erro ao converter usuário: $e");
-                        return false; // Não exibe se houver erro de conversão
+                        return false;
                       }
-                    }).toList();
-                    // --- FIM DO FILTRO ---
+                    })
+                    .toList(); // Converte o resultado do filtro de volta para uma Lista.
+                // --- FIM DO FILTRO ---
 
-                    if (usuariosFiltrados.isEmpty) {
-                      return const Center(
-                        child: Text("Nenhum usuário corresponde à busca."),
-                      );
-                    }
+                // Se, *depois de filtrar*, a lista ficar vazia...
+                if (usuariosFiltrados.isEmpty) {
+                  return const Center(
+                    child: Text("Nenhum usuário corresponde à busca."),
+                  );
+                }
 
-                    // Usamos a 'usuariosFiltrados' para construir a lista
-                    return ListView.builder(
-                      padding: const EdgeInsets.all(8.0),
-                      itemCount: usuariosFiltrados.length,
-                      itemBuilder: (context, index) {
-                        // Pega o documento filtrado
-                        DocumentSnapshot doc = usuariosFiltrados[index];
+                // Finalmente, constrói a 'ListView'.
+                // 'ListView.builder' é otimizado: só constrói os itens
+                // que estão visíveis na tela.
+                return ListView.builder(
+                  padding: const EdgeInsets.all(8.0), // Espaço nas bordas.
+                  // O número de itens é o da lista *filtrada*.
+                  itemCount: usuariosFiltrados.length,
+                  // 'itemBuilder' é a função que constrói CADA item da lista.
+                  itemBuilder: (context, index) {
+                    // Pega o documento filtrado na posição 'index'.
+                    DocumentSnapshot doc = usuariosFiltrados[index];
 
-                        // JEITO NOVO (seguro):
-                        // Converte o 'map' (doc.data()) e o ID (doc.id)
-                        // para o nosso objeto Usuario.
-                        final Usuario usuario = Usuario.fromMap(
-                          doc.data() as Map<String, dynamic>,
-                          doc.id,
-                        );
+                    // Converte o 'doc' (dados brutos) para o nosso objeto 'Usuario'.
+                    final Usuario usuario = Usuario.fromMap(
+                      doc.data() as Map<String, dynamic>,
+                      doc.id,
+                    );
 
-                        // --- NOVO CARD DE USUÁRIO ---
-                        return Card(
-                          elevation: 1.0,
-                          shadowColor: Colors.grey.withOpacity(0.2),
-                          margin: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 6,
+                    // --- NOVO CARD DE USUÁRIO ---
+                    // Retorna o 'Card' (cartão) para este usuário.
+                    return Card(
+                      elevation: 1.0, // Sombra sutil.
+                      shadowColor: Colors.grey.withOpacity(0.2),
+                      margin: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 6,
+                      ), // Margens.
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(
+                          12.0,
+                        ), // Cantos redondos.
+                      ),
+                      // 'ListTile' é um widget pronto, perfeito para listas.
+                      child: ListTile(
+                        // Define o padding interno.
+                        contentPadding: const EdgeInsets.symmetric(
+                          vertical: 10,
+                          horizontal: 16,
+                        ),
+                        // Ação de clique no item!
+                        onTap: () {
+                          // Chama a função que criamos, passando o 'usuario'
+                          // deste item específico.
+                          _mostrarDetalhesUsuario(context, usuario);
+                        },
+                        // 'leading': O widget à esquerda.
+                        leading: CircleAvatar(
+                          radius: 25,
+                          backgroundColor: Theme.of(
+                            context,
+                          ).primaryColor.withOpacity(0.1),
+                          child: Text(
+                            // Pega a primeira letra do nome.
+                            usuario.nome.isNotEmpty
+                                ? usuario.nome[0].toUpperCase()
+                                : 'U',
+                            style: TextStyle(
+                              color: Theme.of(context).primaryColor,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12.0),
+                        ),
+                        // 'title': O texto principal.
+                        title: Text(
+                          usuario.nome,
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
                           ),
-                          child: ListTile(
-                            // Define o padding interno do ListTile
-                            contentPadding: const EdgeInsets.symmetric(
-                              vertical: 10,
-                              horizontal: 16,
-                            ),
-                            // Ação de clique
-                            onTap: () {
-                              // Chama nossa nova função!
-                              _mostrarDetalhesUsuario(context, usuario);
-                            },
-                            // Avatar
-                            leading: CircleAvatar(
-                              radius: 25,
-                              backgroundColor: Theme.of(
-                                context,
-                              ).primaryColor.withOpacity(0.1),
-                              child: Text(
-                                // Pega a primeira letra do nome
-                                usuario.nome.isNotEmpty
-                                    ? usuario.nome[0].toUpperCase()
-                                    : 'U',
-                                style: TextStyle(
-                                  color: Theme.of(context).primaryColor,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ),
-                            // Nome (Título)
-                            title: Text(
-                              usuario.nome,
-                              style: const TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 16,
-                              ),
-                            ),
-                            // Subtítulo (Email e Telefone)
-                            subtitle: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
+                        ),
+                        // 'subtitle': O texto abaixo do título.
+                        // Usamos uma 'Column' para empilhar Email e Telefone.
+                        subtitle: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const SizedBox(height: 4),
+                            // Linha do Email (Ícone + Texto).
+                            Row(
                               children: [
-                                const SizedBox(height: 4),
-                                // Linha do Email
-                                Row(
-                                  children: [
-                                    Icon(
-                                      Icons.email_outlined,
-                                      size: 14,
-                                      color: Colors.grey[600],
-                                    ),
-                                    const SizedBox(width: 6),
-                                    Expanded(
-                                      child: Text(
-                                        usuario.email,
-                                        style: TextStyle(
-                                          color: Colors.grey[700],
-                                          fontSize: 13,
-                                        ),
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                    ),
-                                  ],
+                                Icon(
+                                  Icons.email_outlined,
+                                  size: 14,
+                                  color: Colors.grey[600],
                                 ),
-                                const SizedBox(height: 4),
-                                // Linha do Telefone
-                                Row(
-                                  children: [
-                                    Icon(
-                                      Icons.phone_outlined,
-                                      size: 14,
-                                      color: Colors.grey[600],
+                                const SizedBox(width: 6),
+                                // 'Expanded' impede o email de "estourar" a tela.
+                                Expanded(
+                                  child: Text(
+                                    usuario.email,
+                                    style: TextStyle(
+                                      color: Colors.grey[700],
+                                      fontSize: 13,
                                     ),
-                                    const SizedBox(width: 6),
-                                    Text(
-                                      usuario
-                                          .telefone, // <-- Usando o novo campo
-                                      style: TextStyle(
-                                        color: Colors.grey[700],
-                                        fontSize: 13,
-                                      ),
-                                    ),
-                                  ],
+                                    overflow: TextOverflow
+                                        .ellipsis, // Coloca "..." se for longo.
+                                  ),
                                 ),
                               ],
                             ),
-                            // Ícone "Mais"
-                            trailing: IconButton(
-                              icon: Icon(
-                                Icons.more_vert,
-                                color: Colors.grey[500],
-                              ),
-                              onPressed: () {
-                                // Ação para o "mais" (ex: editar, excluir)
-                                print("Menu para: ${usuario.nome}");
-                              },
+                            const SizedBox(height: 4),
+                            // Linha do Telefone (Ícone + Texto).
+                            Row(
+                              children: [
+                                Icon(
+                                  Icons.phone_outlined,
+                                  size: 14,
+                                  color: Colors.grey[600],
+                                ),
+                                const SizedBox(width: 6),
+                                Text(
+                                  usuario.telefone, // Usa o campo 'telefone'.
+                                  style: TextStyle(
+                                    color: Colors.grey[700],
+                                    fontSize: 13,
+                                  ),
+                                ),
+                              ],
                             ),
-                            isThreeLine:
-                                true, // Garante altura correta para as 3 linhas
-                          ),
-                        );
-                        // --- FIM DO NOVO CARD ---
-                      },
+                          ],
+                        ),
+                        // 'trailing': O widget à direita.
+                        trailing: IconButton(
+                          icon: Icon(Icons.more_vert, color: Colors.grey[500]),
+                          onPressed: () {
+                            // Ação para o menu "mais" (ex: editar, excluir).
+                            print("Menu para: ${usuario.nome}");
+                          },
+                        ),
+                        // 'isThreeLine: true' informa ao ListTile que o
+                        // subtítulo tem 2 linhas, ajustando a altura
+                        // total do card para ficar mais espaçado.
+                        isThreeLine: true,
+                      ),
                     );
+                    // --- FIM DO NOVO CARD ---
                   },
+                );
+              },
             ),
           ),
         ],
