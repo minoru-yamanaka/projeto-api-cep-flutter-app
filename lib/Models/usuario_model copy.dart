@@ -4,7 +4,7 @@ class Usuario {
   final String email;
   final String telefone;
   final String cpf;
-  final String senha; // O modelo pode ter a senha, não vamos exibi-la na tela.
+  final String senha;
 
   Usuario({
     required this.id,
@@ -30,22 +30,17 @@ class Usuario {
   }
 
   // -----------------------------------------------------------------
-  // DESERIALIZAÇÃO (Corrigido)
+  // DESERIALIZAÇÃO (O que você precisa)
   // Converte: Map (vindo do Firebase) -> Objeto Usuario
   // -----------------------------------------------------------------
   factory Usuario.fromMap(Map<String, dynamic> map, String idUser) {
     return Usuario(
-      // ---- CORREÇÃO AQUI ----
-      id: idUser, // Usamos o idUser vindo do documento
-
-      // Adicionamos '??' (null check) para segurança.
-      // Se 'map["nome"]' for nulo, ele usará 'Nome não informado'.
-      nome: map["nome"] ?? 'Nome não informado',
-      email: map["email"] ?? 'Email não informado',
-      telefone: map["telefone"] ?? 'Telefone não informado',
-      senha: map["senha"] ?? '******', // Boa prática não carregar a senha real
-      cpf: map["cpf"] ?? 'CPF não informado',
+      id: "",
+      nome: map["nome"],
+      email: map["email"],
+      telefone: map["telefone"],
+      senha: map["senha"],
+      cpf: map["cpf"],
     );
   }
 }
-
