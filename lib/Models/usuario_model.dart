@@ -15,6 +15,10 @@ class Usuario {
     required this.senha,
   });
 
+  // -----------------------------------------------------------------
+  // SERIALIZAÇÃO (O que você já tem)
+  // Converte: Objeto Usuario -> Map (para enviar ao Firebase)
+  // -----------------------------------------------------------------
   Map<String, dynamic> toMap() {
     return {
       "nome": nome,
@@ -25,6 +29,10 @@ class Usuario {
     };
   }
 
+  // -----------------------------------------------------------------
+  // DESERIALIZAÇÃO (O que você precisa)
+  // Converte: Map (vindo do Firebase) -> Objeto Usuario
+  // -----------------------------------------------------------------
   factory Usuario.fromMap(Map<String, dynamic> map, String idUser) {
     return Usuario(
       id: "",

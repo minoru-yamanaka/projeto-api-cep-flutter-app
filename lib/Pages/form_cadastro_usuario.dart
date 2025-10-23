@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:projeto_2/Models/usuario_model.dart';
+import 'package:projeto_2/Pages/lista_usuarios_page.dart';
 import 'package:projeto_2/Services/firebase_service.dart';
 
 class FormCadastroUsuarioPage extends StatefulWidget {
@@ -54,10 +55,7 @@ class _FormCadastroUsuarioPageState extends State<FormCadastroUsuarioPage> {
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                Text(
-                  "Usuário cadastrado com sucesso!",
-                  style: TextStyle(color: Colors.white),
-                ),
+                Text("Sucesso: $idUser", style: TextStyle(color: Colors.white)),
               ],
             ),
           ),
@@ -168,6 +166,20 @@ class _FormCadastroUsuarioPageState extends State<FormCadastroUsuarioPage> {
                     ElevatedButton(
                       onPressed: salvarUsuario,
                       child: Text("Cadastrar"),
+                    ),
+
+                    // Em algum botão, em outra página:
+                    ElevatedButton(
+                      child: Text("Ver Usuários Cadastrados"),
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) =>
+                                ListaUsuariosPage(), // Navega para a nova página
+                          ),
+                        );
+                      },
                     ),
                   ],
                 ),

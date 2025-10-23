@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:projeto_2/Pages/forrm_cadastro_usuario.dart';
+import 'package:projeto_2/Pages/form_cadastro_usuario.dart';
 import 'package:projeto_2/Pages/home_page.dart';
 import 'package:projeto_2/main.dart';
 
