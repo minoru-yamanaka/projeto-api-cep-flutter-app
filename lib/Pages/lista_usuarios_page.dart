@@ -38,6 +38,7 @@ class _ListaUsuariosPageState extends State<ListaUsuariosPage> {
   // que foi clicado na lista.
   void _mostrarDetalhesUsuario(BuildContext context, Usuario usuario) {
     // Comando do Flutter para "subir" um modal.
+    // que o prof pediu 
     showModalBottomSheet(
       context: context, // Onde ele deve aparecer (na tela atual).
       isScrollControlled:
